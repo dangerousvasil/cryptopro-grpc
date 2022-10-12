@@ -12,8 +12,11 @@ import (
 	"os"
 )
 
+var childPort *int
+
 func init() {
 	rootCmd.AddCommand(childCmd)
+	childPort = childCmd.Flags().IntP(`port`, `p`, 8080, `port run on`)
 }
 
 var childCmd = &cobra.Command{
@@ -22,7 +25,7 @@ var childCmd = &cobra.Command{
 	Long:  `Программное обеспечение, необходимое для работы с электронной подписью`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8081))
+		lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *childPort))
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 		}

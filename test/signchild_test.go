@@ -24,7 +24,7 @@ func TestSignChild(t *testing.T) {
 		cancel()
 	}()
 
-	conn, err := grpc.DialContext(ctx, `localhost:8081`, opts...)
+	conn, err := grpc.DialContext(ctx, `localhost:32955`, opts...)
 	if err != nil {
 		log.Println(`Dial`, err)
 		return

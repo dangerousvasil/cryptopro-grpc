@@ -6,16 +6,12 @@ import (
 	"cryptopro-jsonrpc/src/lib/grpc_service"
 	"fmt"
 	"log"
-	"os/exec"
 	"sync"
 )
 
 type ServerExternal struct {
 	grpc_service.ServiceServer
-	binFile        string
-	child          *exec.Cmd
-	serviceStream  grpc_service.ServiceInternal_SignClient
-	InternalClient grpc_service.ServiceInternalClient
+	binFile string
 
 	childPool map[string]*innchild.InnerChild
 	lock      *sync.RWMutex
@@ -31,9 +27,15 @@ func NewServiceServer(ctx context.Context, binFile string) *ServerExternal {
 	})
 }
 
+const CprocspDefaultStorage = `my`
+
 func (s *ServerExternal) Sign(ctx context.Context, req *grpc_service.SignRequest) (*grpc_service.SignResponse, error) {
 	var err error
 	ctx = context.Background()
+
+	if req.GetStorage() == `` {
+		req.Storage = CprocspDefaultStorage
+	}
 
 	child, err := s.GetChild(req)
 	if err != nil {
@@ -64,10 +66,17 @@ func (s *ServerExternal) GetChild(req *grpc_service.SignRequest) (*innchild.Inne
 		return child, nil
 	}
 	s.lock.Lock()
-	var err error
 	defer s.lock.Unlock()
-	s.childPool[s.GetChildKey(req)], err = innchild.NewInSignChild(s.ctx, s.binFile)
-	return s.childPool[s.GetChildKey(req)], err
+	var err error
+	_, ok = s.childPool[s.GetChildKey(req)]
+	if !ok {
+		child, err = innchild.NewInSignChild(s.ctx, s.binFile)
+		if err != nil {
+			return nil, err
+		}
+		s.childPool[s.GetChildKey(req)] = child
+	}
+	return child, err
 }
 
 func (s *ServerExternal) GetChildKey(req *grpc_service.SignRequest) string {

@@ -32,7 +32,7 @@ func TestSign(t *testing.T) {
 
 	res, err := c.Sign(ctx, &grpc_service.SignRequest{
 		Storage: "my",
-		Content: []byte("HelloWorld"),
+		Content: append([]byte("HelloWorld"), make([]byte, 40)...),
 		Key:     "762f84827e9199f72043f01d548ad86503b7fa98",
 	})
 

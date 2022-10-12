@@ -2,7 +2,9 @@ package innchild
 
 import (
 	"errors"
+	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"syscall"
@@ -11,10 +13,11 @@ import (
 var SERVICE_MSG = `SERVICE_MSG`
 
 // StartChild стартуем потомка
-func StartChild(binFile string) (*exec.Cmd, error) {
+func StartChild(binFile string, port int) (*exec.Cmd, error) {
 
 	// запускаем потомка
-	var cmd = exec.Command(binFile, []string{`child`}...)
+	var cmd = exec.Command(binFile, []string{`child`, fmt.Sprintf(`-p=%d`, port)}...)
+	log.Println(cmd)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Pdeathsig: syscall.SIGINT,
 		//Ptrace:    true,
@@ -41,7 +44,7 @@ func StartChild(binFile string) (*exec.Cmd, error) {
 	if err != nil {
 		return nil, err
 	}
-	if SERVICE_MSG != string(hi)[:len(SERVICE_MSG)] {
+	if len(hi) < len(SERVICE_MSG) || SERVICE_MSG != string(hi[:len(SERVICE_MSG)]) {
 		return nil, errors.New("unexpected welcome message " + string(hi))
 	}
 	//log.Println(`greeting accepted`)
