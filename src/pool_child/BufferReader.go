@@ -1,9 +1,11 @@
-package rwCloser
+package pool_child
 
 import "io"
 
-// BufferReader читаем соединения до конца пакета
-func BufferReader(r io.Reader) (buffer []byte, len int, err error) {
+const DEFAULT_BUFFER_LENGTH = 4096
+
+// childReader читаем соединения
+func childReader(r io.Reader) (buffer []byte, len int, err error) {
 
 	buf := make([]byte, DEFAULT_BUFFER_LENGTH)
 	for {

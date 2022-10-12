@@ -1,7 +1,6 @@
 package pool_child
 
 import (
-	"cryptopro-jsonrpc/src/rwCloser"
 	"errors"
 	"io"
 	"os"
@@ -9,7 +8,7 @@ import (
 	"syscall"
 )
 
-var SERVICE_HI_MSG = `SERVICE_HI_MSG`
+var SERVICE_MSG = `SERVICE_MSG`
 
 // StartChild стартуем потомка
 func StartChild(binFile string) (*exec.Cmd, error) {
@@ -37,13 +36,13 @@ func StartChild(binFile string) (*exec.Cmd, error) {
 		return nil, err
 	}
 
-	// ждем приглашение от потомка что он запустился
-	hi, _, err := rwCloser.BufferReader(stdout)
+	// ждем приглашение от потомка
+	hi, _, err := childReader(stdout)
 	if err != nil {
 		return nil, err
 	}
-	if SERVICE_HI_MSG != string(hi)[:len(SERVICE_HI_MSG)] {
-		return nil, errors.New("unexpected hi message " + string(hi))
+	if SERVICE_MSG != string(hi)[:len(SERVICE_MSG)] {
+		return nil, errors.New("unexpected welcome message " + string(hi))
 	}
 	//log.Println(`greeting accepted`)
 

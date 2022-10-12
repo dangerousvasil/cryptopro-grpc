@@ -32,7 +32,7 @@ var childCmd = &cobra.Command{
 		server := server_internal.NewServiceServer()
 		grpc_service.RegisterServiceInternalServer(grpcServer, server)
 
-		_, err = fmt.Fprintln(os.Stdout, pool_child.SERVICE_HI_MSG)
+		_, err = fmt.Fprintln(os.Stdout, pool_child.SERVICE_MSG)
 		if err != nil {
 			log.Println(err)
 		}
