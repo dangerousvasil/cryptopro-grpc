@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"cryptopro-jsonrpc/src/innchild"
 	"cryptopro-jsonrpc/src/lib/grpc_service"
-	"cryptopro-jsonrpc/src/pool_child"
 	"cryptopro-jsonrpc/src/server_internal"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -32,7 +32,7 @@ var childCmd = &cobra.Command{
 		server := server_internal.NewServiceServer()
 		grpc_service.RegisterServiceInternalServer(grpcServer, server)
 
-		_, err = fmt.Fprintln(os.Stdout, pool_child.SERVICE_MSG)
+		_, err = fmt.Fprintln(os.Stdout, innchild.SERVICE_MSG)
 		if err != nil {
 			log.Println(err)
 		}

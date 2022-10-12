@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"cryptopro-jsonrpc/src/lib/grpc_service"
 	"cryptopro-jsonrpc/src/server_external"
 	"fmt"
@@ -26,7 +27,7 @@ var rpcCmd = &cobra.Command{
 	Short: "start json rpc service",
 	Long:  `Сервис обработки json rpc запросов`,
 	Run: func(cmd *cobra.Command, args []string) {
-
+		ctx, cancel := context.WithCancel(context.Background())
 		lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *rpcPort))
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
@@ -35,7 +36,7 @@ var rpcCmd = &cobra.Command{
 
 		grpcServer := grpc.NewServer(opts...)
 
-		server := server_external.NewServiceServer(binFile)
+		server := server_external.NewServiceServer(ctx, binFile)
 
 		grpc_service.RegisterServiceServer(grpcServer, server)
 
@@ -46,9 +47,11 @@ var rpcCmd = &cobra.Command{
 				switch <-sigChan {
 				case syscall.SIGTERM:
 					log.Println("Recive signal SIGTERM")
+					cancel()
 					grpcServer.GracefulStop()
 				case syscall.SIGINT:
 					log.Println("Recive signal SIGINT")
+					cancel()
 					grpcServer.GracefulStop()
 				default:
 					time.Sleep(time.Millisecond * 100)

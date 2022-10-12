@@ -2,12 +2,12 @@ package server_external
 
 import (
 	"context"
+	"cryptopro-jsonrpc/src/innchild"
 	"cryptopro-jsonrpc/src/lib/grpc_service"
-	"cryptopro-jsonrpc/src/pool_child"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"fmt"
 	"log"
 	"os/exec"
+	"sync"
 )
 
 type ServerExternal struct {
@@ -16,11 +16,18 @@ type ServerExternal struct {
 	child          *exec.Cmd
 	serviceStream  grpc_service.ServiceInternal_SignClient
 	InternalClient grpc_service.ServiceInternalClient
+
+	childPool map[string]*innchild.InnerChild
+	lock      *sync.RWMutex
+	ctx       context.Context
 }
 
-func NewServiceServer(binFile string) *ServerExternal {
+func NewServiceServer(ctx context.Context, binFile string) *ServerExternal {
 	return &(ServerExternal{
-		binFile: binFile,
+		ctx:       ctx,
+		binFile:   binFile,
+		lock:      new(sync.RWMutex),
+		childPool: map[string]*innchild.InnerChild{},
 	})
 }
 
@@ -28,27 +35,13 @@ func (s *ServerExternal) Sign(ctx context.Context, req *grpc_service.SignRequest
 	var err error
 	ctx = context.Background()
 
-	if s.child == nil {
-
-		s.child, err = pool_child.StartChild(s.binFile)
-		if err != nil {
-			return nil, err
-		}
-
-		var opts []grpc.DialOption
-
-		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		opts = append(opts, grpc.WithBlock())
-
-		//defer cancel()
-		conn, err := grpc.DialContext(ctx, `localhost:8081`, opts...)
-		if err != nil {
-			log.Println(`Dial`, err)
-			return nil, err
-		}
-		s.InternalClient = grpc_service.NewServiceInternalClient(conn)
+	child, err := s.GetChild(req)
+	if err != nil {
+		log.Println(`GetChild`, err)
+		return nil, err
 	}
-	serviceStream, err := s.InternalClient.Sign(ctx)
+
+	serviceStream, err := child.InternalClient.Sign(ctx)
 	if err != nil {
 		log.Println(`Dial`, err)
 		return nil, err
@@ -61,4 +54,22 @@ func (s *ServerExternal) Sign(ctx context.Context, req *grpc_service.SignRequest
 	}
 
 	return serviceStream.Recv()
+}
+
+func (s *ServerExternal) GetChild(req *grpc_service.SignRequest) (*innchild.InnerChild, error) {
+	s.lock.RLock()
+	child, ok := s.childPool[s.GetChildKey(req)]
+	s.lock.RUnlock()
+	if ok {
+		return child, nil
+	}
+	s.lock.Lock()
+	var err error
+	defer s.lock.Unlock()
+	s.childPool[s.GetChildKey(req)], err = innchild.NewInSignChild(s.ctx, s.binFile)
+	return s.childPool[s.GetChildKey(req)], err
+}
+
+func (s *ServerExternal) GetChildKey(req *grpc_service.SignRequest) string {
+	return fmt.Sprintf(`%s-%s`, req.GetStorage(), req.GetKey())
 }

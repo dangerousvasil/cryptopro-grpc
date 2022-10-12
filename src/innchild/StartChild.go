@@ -1,4 +1,4 @@
-package pool_child
+package innchild
 
 import (
 	"errors"

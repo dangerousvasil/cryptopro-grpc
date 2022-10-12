@@ -31,7 +31,7 @@ func TestSign(t *testing.T) {
 	c := grpc_service.NewServiceClient(conn)
 
 	res, err := c.Sign(ctx, &grpc_service.SignRequest{
-		Storage: "uMY",
+		Storage: "my",
 		Content: []byte("HelloWorld"),
 		Key:     "762f84827e9199f72043f01d548ad86503b7fa98",
 	})
