@@ -1,0 +1,23 @@
+syntax = "proto3";
+package cryptopro_grpc;
+option go_package = "./;grpc_service";
+
+message SignRequest {
+  string storage = 1;
+  bytes content = 2;
+  string key = 3;
+  uint64  flag = 4;
+}
+message SignResponse {
+  bytes content = 1;
+  uint64 code = 2;
+  string description = 3;
+}
+
+
+service Service {
+  rpc Sign (SignRequest) returns (SignResponse) {}
+}
+service ServiceInternal {
+  rpc Sign (stream SignRequest) returns (stream SignResponse) {}
+}

@@ -1,0 +1,10 @@
+###
+GRPC localhost/cryptopro_grpc.Service/Sign
+
+{
+  "storage": "uMY",
+  "content": "HelloWorld",
+  "key": "762f84827e9199f72043f01d548ad86503b7fa98"
+}
+
+<> 2022-10-11T185512.OK.json
