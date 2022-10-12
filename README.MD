@@ -24,38 +24,38 @@ protoc/grpc_service_sign.proto
 ### Подготовка
 
 1. Импортируйте сертифкаты в хранилище пользователя под которым работает сервис
-
+2. Запустите сервис $cryptopro-jsonrpc rpc
 
 ## Now supported
-* Low Level Sign *
+* Low Level Sign Buffer (stream)
 
 ### TODO
+* MsgType Buffer (stream)
+* MsgType File (one shot)
 * Cloud Store
-* Open store
-* Close store
-* List certificates
-* Find certificate by SHA1 signature
-* Find certificate by Subject name
-* Add an encoded certificate to store
-* Low Level Verify
-* Low Level Encrypt
-* Low Level Decrypt
-* Generate Hash
-* Sign Hash
-* Get CRL's
-* Get Issuer Certificate URL
-* Get OCSP URL
+* Low Level Verify Buffer (stream)
 
-* Find Certificate by other attributes
-* Simple Sign
-* Simple CoSign
-* Simple Encrypt
-* Simple Verify
+* Low Level File Stream Sign (one shot)
+* Low Level File Stream Verify (one shot)
+* Low Level File Stream Encrypt (one shot)
+* Low Level File Stream Decrypt (one shot)
+
+* List certificates in store
+* Find certificate by SHA1 
+* Add an encoded certificate to store
+* Get Certificate Information (CRL,OCSP URL,Name,Serial ...)
+
 * Low Level CoSign
 * Examples
 
+#### MayBe
+* Find Certificate by other attributes
+* Generate Hash
+* Sign Hash
+
+
 ##### Пример использования
-```
+```go
 	conn, err := grpc.Dial(`localhost:8080`, opts...)
 	if err != nil {
 		log.Println(`Dial`, err)
