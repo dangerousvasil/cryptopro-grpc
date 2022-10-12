@@ -15,11 +15,9 @@ protoc/grpc_service_sign.proto
 
 ![Idea](docs/overview.png)
 
-### Установка
+### Установка CSP
 1. Скачать CSP 5.0 https://www.cryptopro.ru/products/csp/downloads
 2. Разархивировать и установить командой `./install.sh`
-3. Скачать `git clone github.com/number571/go-cryptopro`
-4. Запустить `go run main.go`
 
 ### Подготовка
 
