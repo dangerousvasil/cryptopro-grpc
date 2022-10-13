@@ -46,7 +46,7 @@ func (s *ServerInternal) Type(stream grpc_service.ServiceInternal_TypeServer) er
 
 	resp := grpc_service.TypeResponse{
 		Type:        uint32(len(data.Content)),
-		Description: `this metod has no implementation`,
+		Description: `this method has no implementation`,
 	}
 
 	err = stream.Send(&resp)
@@ -90,6 +90,7 @@ func (s *ServerInternal) Verify(stream grpc_service.ServiceInternal_VerifyServer
 	if err != nil {
 		return err
 	}
+	defer cryptopro.CertFreeCertificateContext(checkCert)
 
 	status, err := cryptopro.CryptMsgControl(decMsg, 0, cryptopro.CMSG_CTRL_VERIFY_SIGNATURE, unsafe.Pointer(checkCert.GetCertInfo()))
 	if err != nil {
