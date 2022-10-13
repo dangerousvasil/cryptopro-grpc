@@ -24,7 +24,6 @@ var childCmd = &cobra.Command{
 	Short: "A crypto pro child service",
 	Long:  `Программное обеспечение, необходимое для работы с электронной подписью`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *childPort))
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)

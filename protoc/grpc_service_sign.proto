@@ -24,13 +24,25 @@ message VerifyResponse  {
   string key = 1;
 }
 
+message ContentRequest {
+  bytes content = 2;
+}
+
+message TypeResponse {
+  repeated string serials = 1;
+  uint32 type = 2;
+  uint64 code = 3;
+  string description = 4;
+}
 
 service Service {
   rpc Sign (SignRequest) returns (SignResponse) {}
   rpc Verify (VerifyRequest) returns (VerifyResponse) {}
-
+  rpc Type (ContentRequest) returns (TypeResponse){}
 }
+
 service ServiceInternal {
   rpc Sign (stream SignRequest) returns (stream SignResponse) {}
   rpc Verify (stream VerifyRequest) returns (stream VerifyResponse) {}
+  rpc Type (stream ContentRequest) returns (stream TypeResponse){}
 }

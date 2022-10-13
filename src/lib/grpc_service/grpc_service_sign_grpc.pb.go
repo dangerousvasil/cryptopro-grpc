@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ServiceClient interface {
 	Sign(ctx context.Context, in *SignRequest, opts ...grpc.CallOption) (*SignResponse, error)
 	Verify(ctx context.Context, in *VerifyRequest, opts ...grpc.CallOption) (*VerifyResponse, error)
+	Type(ctx context.Context, in *ContentRequest, opts ...grpc.CallOption) (*TypeResponse, error)
 }
 
 type serviceClient struct {
@@ -48,12 +49,22 @@ func (c *serviceClient) Verify(ctx context.Context, in *VerifyRequest, opts ...g
 	return out, nil
 }
 
+func (c *serviceClient) Type(ctx context.Context, in *ContentRequest, opts ...grpc.CallOption) (*TypeResponse, error) {
+	out := new(TypeResponse)
+	err := c.cc.Invoke(ctx, "/cryptopro_grpc.Service/Type", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
 	Sign(context.Context, *SignRequest) (*SignResponse, error)
 	Verify(context.Context, *VerifyRequest) (*VerifyResponse, error)
+	Type(context.Context, *ContentRequest) (*TypeResponse, error)
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -66,6 +77,9 @@ func (UnimplementedServiceServer) Sign(context.Context, *SignRequest) (*SignResp
 }
 func (UnimplementedServiceServer) Verify(context.Context, *VerifyRequest) (*VerifyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
+}
+func (UnimplementedServiceServer) Type(context.Context, *ContentRequest) (*TypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Type not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -116,6 +130,24 @@ func _Service_Verify_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Service_Type_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ContentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).Type(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/cryptopro_grpc.Service/Type",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).Type(ctx, req.(*ContentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -131,6 +163,10 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Verify",
 			Handler:    _Service_Verify_Handler,
 		},
+		{
+			MethodName: "Type",
+			Handler:    _Service_Type_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "grpc_service_sign.proto",
@@ -142,6 +178,7 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 type ServiceInternalClient interface {
 	Sign(ctx context.Context, opts ...grpc.CallOption) (ServiceInternal_SignClient, error)
 	Verify(ctx context.Context, opts ...grpc.CallOption) (ServiceInternal_VerifyClient, error)
+	Type(ctx context.Context, opts ...grpc.CallOption) (ServiceInternal_TypeClient, error)
 }
 
 type serviceInternalClient struct {
@@ -214,12 +251,44 @@ func (x *serviceInternalVerifyClient) Recv() (*VerifyResponse, error) {
 	return m, nil
 }
 
+func (c *serviceInternalClient) Type(ctx context.Context, opts ...grpc.CallOption) (ServiceInternal_TypeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ServiceInternal_ServiceDesc.Streams[2], "/cryptopro_grpc.ServiceInternal/Type", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceInternalTypeClient{stream}
+	return x, nil
+}
+
+type ServiceInternal_TypeClient interface {
+	Send(*ContentRequest) error
+	Recv() (*TypeResponse, error)
+	grpc.ClientStream
+}
+
+type serviceInternalTypeClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceInternalTypeClient) Send(m *ContentRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *serviceInternalTypeClient) Recv() (*TypeResponse, error) {
+	m := new(TypeResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceInternalServer is the server API for ServiceInternal service.
 // All implementations must embed UnimplementedServiceInternalServer
 // for forward compatibility
 type ServiceInternalServer interface {
 	Sign(ServiceInternal_SignServer) error
 	Verify(ServiceInternal_VerifyServer) error
+	Type(ServiceInternal_TypeServer) error
 	mustEmbedUnimplementedServiceInternalServer()
 }
 
@@ -232,6 +301,9 @@ func (UnimplementedServiceInternalServer) Sign(ServiceInternal_SignServer) error
 }
 func (UnimplementedServiceInternalServer) Verify(ServiceInternal_VerifyServer) error {
 	return status.Errorf(codes.Unimplemented, "method Verify not implemented")
+}
+func (UnimplementedServiceInternalServer) Type(ServiceInternal_TypeServer) error {
+	return status.Errorf(codes.Unimplemented, "method Type not implemented")
 }
 func (UnimplementedServiceInternalServer) mustEmbedUnimplementedServiceInternalServer() {}
 
@@ -298,6 +370,32 @@ func (x *serviceInternalVerifyServer) Recv() (*VerifyRequest, error) {
 	return m, nil
 }
 
+func _ServiceInternal_Type_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ServiceInternalServer).Type(&serviceInternalTypeServer{stream})
+}
+
+type ServiceInternal_TypeServer interface {
+	Send(*TypeResponse) error
+	Recv() (*ContentRequest, error)
+	grpc.ServerStream
+}
+
+type serviceInternalTypeServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceInternalTypeServer) Send(m *TypeResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *serviceInternalTypeServer) Recv() (*ContentRequest, error) {
+	m := new(ContentRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceInternal_ServiceDesc is the grpc.ServiceDesc for ServiceInternal service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -315,6 +413,12 @@ var ServiceInternal_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Verify",
 			Handler:       _ServiceInternal_Verify_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "Type",
+			Handler:       _ServiceInternal_Type_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
