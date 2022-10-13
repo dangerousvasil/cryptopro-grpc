@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
 	Sign(ctx context.Context, in *SignRequest, opts ...grpc.CallOption) (*SignResponse, error)
+	Verify(ctx context.Context, in *VerifyRequest, opts ...grpc.CallOption) (*VerifyResponse, error)
 }
 
 type serviceClient struct {
@@ -38,11 +39,21 @@ func (c *serviceClient) Sign(ctx context.Context, in *SignRequest, opts ...grpc.
 	return out, nil
 }
 
+func (c *serviceClient) Verify(ctx context.Context, in *VerifyRequest, opts ...grpc.CallOption) (*VerifyResponse, error) {
+	out := new(VerifyResponse)
+	err := c.cc.Invoke(ctx, "/cryptopro_grpc.Service/Verify", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
 	Sign(context.Context, *SignRequest) (*SignResponse, error)
+	Verify(context.Context, *VerifyRequest) (*VerifyResponse, error)
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -52,6 +63,9 @@ type UnimplementedServiceServer struct {
 
 func (UnimplementedServiceServer) Sign(context.Context, *SignRequest) (*SignResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sign not implemented")
+}
+func (UnimplementedServiceServer) Verify(context.Context, *VerifyRequest) (*VerifyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -84,6 +98,24 @@ func _Service_Sign_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Service_Verify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).Verify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/cryptopro_grpc.Service/Verify",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).Verify(ctx, req.(*VerifyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -95,6 +127,10 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Sign",
 			Handler:    _Service_Sign_Handler,
 		},
+		{
+			MethodName: "Verify",
+			Handler:    _Service_Verify_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "grpc_service_sign.proto",
@@ -105,6 +141,7 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceInternalClient interface {
 	Sign(ctx context.Context, opts ...grpc.CallOption) (ServiceInternal_SignClient, error)
+	Verify(ctx context.Context, opts ...grpc.CallOption) (ServiceInternal_VerifyClient, error)
 }
 
 type serviceInternalClient struct {
@@ -146,11 +183,43 @@ func (x *serviceInternalSignClient) Recv() (*SignResponse, error) {
 	return m, nil
 }
 
+func (c *serviceInternalClient) Verify(ctx context.Context, opts ...grpc.CallOption) (ServiceInternal_VerifyClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ServiceInternal_ServiceDesc.Streams[1], "/cryptopro_grpc.ServiceInternal/Verify", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceInternalVerifyClient{stream}
+	return x, nil
+}
+
+type ServiceInternal_VerifyClient interface {
+	Send(*VerifyRequest) error
+	Recv() (*VerifyResponse, error)
+	grpc.ClientStream
+}
+
+type serviceInternalVerifyClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceInternalVerifyClient) Send(m *VerifyRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *serviceInternalVerifyClient) Recv() (*VerifyResponse, error) {
+	m := new(VerifyResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceInternalServer is the server API for ServiceInternal service.
 // All implementations must embed UnimplementedServiceInternalServer
 // for forward compatibility
 type ServiceInternalServer interface {
 	Sign(ServiceInternal_SignServer) error
+	Verify(ServiceInternal_VerifyServer) error
 	mustEmbedUnimplementedServiceInternalServer()
 }
 
@@ -160,6 +229,9 @@ type UnimplementedServiceInternalServer struct {
 
 func (UnimplementedServiceInternalServer) Sign(ServiceInternal_SignServer) error {
 	return status.Errorf(codes.Unimplemented, "method Sign not implemented")
+}
+func (UnimplementedServiceInternalServer) Verify(ServiceInternal_VerifyServer) error {
+	return status.Errorf(codes.Unimplemented, "method Verify not implemented")
 }
 func (UnimplementedServiceInternalServer) mustEmbedUnimplementedServiceInternalServer() {}
 
@@ -200,6 +272,32 @@ func (x *serviceInternalSignServer) Recv() (*SignRequest, error) {
 	return m, nil
 }
 
+func _ServiceInternal_Verify_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ServiceInternalServer).Verify(&serviceInternalVerifyServer{stream})
+}
+
+type ServiceInternal_VerifyServer interface {
+	Send(*VerifyResponse) error
+	Recv() (*VerifyRequest, error)
+	grpc.ServerStream
+}
+
+type serviceInternalVerifyServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceInternalVerifyServer) Send(m *VerifyResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *serviceInternalVerifyServer) Recv() (*VerifyRequest, error) {
+	m := new(VerifyRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceInternal_ServiceDesc is the grpc.ServiceDesc for ServiceInternal service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -211,6 +309,12 @@ var ServiceInternal_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Sign",
 			Handler:       _ServiceInternal_Sign_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "Verify",
+			Handler:       _ServiceInternal_Verify_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

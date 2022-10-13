@@ -62,7 +62,6 @@ protoc/grpc_service_sign.proto
 	c := grpc_service.NewServiceClient(conn)
 
 	res, err := c.Sign(ctx, &grpc_service.SignRequest{
-		Storage: "uMY",
 		Content: []byte("HelloWorld"),
 		Key:     "762f84827e9199f72043f01d548ad86503b7fa98",
 	})

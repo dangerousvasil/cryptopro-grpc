@@ -47,7 +47,7 @@ func SignOGo(req *grpc_service.SignRequest) ([]byte, error) {
 
 	msgInfo, err := cryptopro.InitSignedInfo(Obj.Client)
 	if err != nil {
-		log.Println(`InitSignedInfo :` + err.Error())
+		log.Println(fmt.Sprintf(`InitSignedInfo :%s`, err))
 		return nil, err
 	}
 

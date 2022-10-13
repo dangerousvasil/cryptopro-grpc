@@ -8,16 +8,29 @@ message SignRequest {
   string key = 3;
   uint64  flag = 4;
 }
+
 message SignResponse {
   bytes content = 1;
   uint64 code = 2;
   string description = 3;
 }
 
+message VerifyRequest {
+  string storage = 1;
+  bytes content = 2;
+}
+
+message VerifyResponse  {
+  string key = 1;
+}
+
 
 service Service {
   rpc Sign (SignRequest) returns (SignResponse) {}
+  rpc Verify (VerifyRequest) returns (VerifyResponse) {}
+
 }
 service ServiceInternal {
   rpc Sign (stream SignRequest) returns (stream SignResponse) {}
+  rpc Verify (stream VerifyRequest) returns (stream VerifyResponse) {}
 }
